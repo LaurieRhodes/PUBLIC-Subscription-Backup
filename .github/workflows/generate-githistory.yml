@@ -1,0 +1,54 @@
+# This Action is used for the git history menus based on the current backup
+
+name: generate-githistory
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "get-githistory"
+  get-githistory:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    env:
+      TENANT: '<ENTER YOUR TENANT NAME>'
+      SUBSCRIPTION: '<ENTER YOUR SUBSCRIPTION ID>'
+      SCOPE: 'azure'
+      DIRECTORY: '${{ github.workspace }}'
+      CLOUDENV: 'AzureCloud'
+      MAPPED_APP_ID: ${{ secrets.SENTINEL_APP_ID }}
+      MAPPED_APP_SECRET: ${{ secrets.SENTINEL_APP_SECRET }}  
+      REPOTOKEN: ${{ secrets.REPOTOKEN }} 
+      
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+          clean: true
+
+      # Run PowerShell script to Generate Git History
+      - name: Generate Git History
+        run: pwsh ./.github/workflows/generate-githistory.ps1
+
+      # Commit the changes to the repository
+      - name: Commit and Push Repo
+        run: |
+          git config --global user.email "laurie@laurierhodes.info"
+          git config --global user.name "Backup Service Account"
+          git pull
+          git checkout main --
+          git add --all
+          if git diff-index --quiet HEAD; then
+            echo "No changes to commit"
+          else
+            git commit -m "Generating Git-History reports"
+            git push origin main
+          fi
+        working-directory: ${{ github.workspace }}

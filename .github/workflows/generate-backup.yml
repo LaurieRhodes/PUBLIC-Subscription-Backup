@@ -1,0 +1,62 @@
+# This Action is used for backing up a subscription.
+
+name: generate-backup
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+    - cron:  '30 17 * * *'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "backup"
+   backup:
+    runs-on: ubuntu-latest
+    env:
+      TENANT: '<ENTER YOUR TENANT NAME>'
+      SUBSCRIPTION: '<ENTER YOUR SUBSCRIPTION ID>'
+      SCOPE: 'azure'
+      DIRECTORY: '${{ github.workspace }}'
+      CLOUDENV: 'AzureCloud'
+      MAPPED_APP_ID: ${{ secrets.SENTINEL_APP_ID }}
+      MAPPED_APP_SECRET: ${{ secrets.SENTINEL_APP_SECRET }} 
+      REPOTOKEN: ${{ secrets.REPOTOKEN }} 
+          
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+          clean: true
+
+      # Run PowerShell script to backup Azure
+      - name: Backup Azure
+        run: pwsh ./.github/workflows/generate-backup.ps1
+
+      # Run PowerShell script to create audit reports
+      - name: Creating Reports
+        run: pwsh ./.github/workflows/generate-audit.ps1
+
+      # Run PowerShell script to Generate Git History
+      - name: Backup Azure
+        run: pwsh ./.github/workflows/generate-githistory.ps1
+        
+      # Commit the changes to the repository
+      - name: Commit and Push Repo
+        run: |
+          git config --global user.email "laurie@laurierhodes.info"
+          git config --global user.name "Backup Service Account"
+          git checkout main --
+          git add --all
+          if git diff-index --quiet HEAD; then
+            echo "No changes to commit"
+          else
+            git commit -m "Daily Backup"
+            git push origin main
+          fi
+        working-directory: ${{ github.workspace }}

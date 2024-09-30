@@ -1,0 +1,137 @@
+﻿[CmdletBinding()]
+    param(
+        [Parameter(mandatory=$true)]
+        [string]$githistorydir,   
+        [Parameter(mandatory=$true)]
+        [string]$reportdir,
+        [Parameter(mandatory=$true)]
+        [string]$backupdir,
+        [Parameter(mandatory=$true)]
+        [string]$moduledir             
+    )
+
+
+<#
+
+    Purpose is to create a menu list of previous git HEAD archives
+
+    Rename to .ps1 to use
+
+    Removed from default project as capability is native to GitHub
+
+#>
+$DebugPreference = 'Continue'
+
+$FriendlyName = "Commit History"
+
+if ((Get-ChildItem Env:PATH).Value -Match '/'){ $OS='linux'}else{$OS='win'}
+
+if($OS -eq 'win' ) { $slash = "\" }
+if($OS -eq 'linux'){ $slash = "/"}
+
+Import-Module "$($moduledir)$($slash)AZRest$($slash)AZRest.psm1" | write-debug
+
+
+$outputpath = "$($githistorydir)$($slash)Commits"
+
+
+write-debug "Establishing Output Path $($outputpath)"
+
+
+
+# Make sure old reports don't exist
+if (Test-Path $outputpath) {
+  Remove-Item $outputpath -Recurse -Force
+}
+
+# Make sure the output directory exists
+ $null = New-Item -ItemType Directory -Force -Path $outputpath
+
+
+
+# Create a Report object class to contain all the harvested fields that interest me.
+# This will be unique with each report
+# this will allow results to be sorted before being written to file
+
+Class oResult{
+    [String]$Date
+    [String]$committer
+    [String]$message
+    [String]$View  
+}
+
+
+
+# Init Output Array
+$OutputArray =@()
+
+
+ if ($env:GITHUB_API_URL){
+    $url = "$($env:GITHUB_API_URL)/repos/$($env:GITHUB_REPOSITORY)/commits"
+    write-debug "url = $($env:GITHUB_API_URL)/repos/$($env:GITHUB_REPOSITORY)/commits"
+  }else{
+    $url = "https://api.github.com/repos/$($env:GITHUB_REPOSITORY)/commits"
+    write-debug "url = $($env:GITHUB_API_URL)/repos/$($env:GITHUB_REPOSITORY)/commits"
+  }
+
+$result = $null
+$result = Invoke-RestMethod -Uri $url -Headers @{
+        'Content-Type'  = 'application/json'
+        'accept'  = 'application/vnd.github+json'
+        'Authorization' = 'Bearer ' + $env:REPOTOKEN
+        'X-GitHub-Api-Version' = '2022-11-28'
+    } -Method GET 
+
+foreach ($commit in $result){
+
+     $otemp = New-Object oResult 
+     $otemp.Date = ($commit.commit.committer).date
+     $otemp.committer  = ($commit.commit.committer).name
+     
+     #Remove characters from message characters that break the markdown table presentation
+     $message = $commit.commit.message
+     $message = $message.replace("`r`n",'')
+     $message = $message.replace("`n",'')
+     $message = $message.replace('|','')
+     $otemp.message  = $message
+     
+     $otemp.View = "[view commit]($($commit.html_url))"
+
+     $OutputArray += $otemp
+
+}
+
+# Create the MD Header
+
+$header =@"
+![](..$($slash)..$($slash)reports$($slash)img$($slash)header.jpg)
+
+# $($FriendlyName)
+
+View an archive of file changes on particular commits
+
+
+| Date                 | Committer   | Message     |View Archive              |
+| -------------------- |-------------|-------------|-------------------------|
+"@
+
+ $null = out-file -FilePath "$($outputpath)$($slash)README.md"  -Force -InputObject $header
+
+
+$OutputArray | ForEach-Object {
+
+  "| $($_.date)    | $($_.committer)     | $($_.message)    | $($_.view)    |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append 
+} 
+
+$footer = @"
+
+![](..$($slash)..$($slash)reports$($slash)img$($slash)logo.jpg)
+"@  
+
+ $null = out-file -FilePath "$($outputpath)$($slash)README.md"  -Append -InputObject $footer
+
+
+
+
+
+
