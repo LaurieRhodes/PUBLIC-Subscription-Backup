@@ -88,11 +88,28 @@ Add the following secrets to your GitHub repository.
 SUB_BACKUP_APP_ID
 SUB_BACKUP_APP_SECRET
 
-
-
 REPOTOKEN ****
 
 Optionally, a Github token with repo scope may be added to allow commits to be viewed as a menu within the project.  Although interesting, this capability is part of Github natively and is redundant.
+
+
+### 4. Customise /.github/workflows/generate-backup.yml
+
+Modify the generate backup workflow to include your Tenant name and subscription ID.
+``` text
+    env:
+      TENANT: '<ENTER YOUR TENANT NAME>'
+      SUBSCRIPTION: '<ENTER YOUR SUBSCRIPTION ID>'
+```
+
+### 4. Customise /.github/workflows/generate-githistory.yml
+
+Modify the generate githistory workflow to include your Tenant name and subscription ID.
+``` text
+    env:
+      TENANT: '<ENTER YOUR TENANT NAME>'
+      SUBSCRIPTION: '<ENTER YOUR SUBSCRIPTION ID>'
+```
 
 ## Usage
 
