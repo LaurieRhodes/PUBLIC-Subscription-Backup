@@ -62,12 +62,11 @@ Subscription-Backup/
 
 - Azure Subscription
 - GitHub repository with the following secrets:
-  
-  
-  - `AZURE_SUBSCRIPTION`: Your Azure Subscription ID
-  - `AZURE_CLIENT_ID`: The Client ID of your Azure AD app registration
-  - `AZURE_CLIENT_SECRET`: The Client Secret of your Azure AD app registration
-  - `AZURE_TENANT_ID`: Your Azure AD Tenant ID
+
+- `AZURE_SUBSCRIPTION`: Your Azure Subscription ID
+- `SUB_BACKUP_APP_ID`: The Client ID of your Azure AD app registration
+- `SUB_BACKUP_APP_SECRET`: The Client Secret of your Azure AD app registration
+- `AZURE_TENANT_ID`: Your Azure AD Tenant ID
 
 ## Setup Instructions
 
@@ -91,7 +90,7 @@ SUB_BACKUP_APP_SECRET
 
 
 
-REPOTOKEN
+REPOTOKEN ****
 
 Optionally, a Github token with repo scope may be added to allow commits to be viewed as a menu within the project.  Although interesting, this capability is part of Github natively and is redundant.
 
@@ -100,6 +99,9 @@ Optionally, a Github token with repo scope may be added to allow commits to be v
 Once deployed, the backup pipeline will run daily.
 
 Review daily reports by following the links from the root README,md
+
+[Code Overview](./docs/CodeOverview.md)
+
 
 ## License
 

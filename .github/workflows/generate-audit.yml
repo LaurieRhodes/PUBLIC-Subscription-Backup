@@ -33,7 +33,7 @@ jobs:
       # Commit the changes to the repository
       - name: Commit and Push Repo
         run: |
-          git config --global user.email "laurie@laurierhodes.info"
+          git config --global user.email "username@domainname.org"
           git config --global user.name "Backup Service Account"
           git checkout main --
           git add --all

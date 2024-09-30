@@ -1,4 +1,4 @@
-# This Action is used for backing up a subscription.
+# This is a basic workflow to help you get started with Actions
 
 name: generate-backup
 
@@ -21,9 +21,11 @@ jobs:
       SCOPE: 'azure'
       DIRECTORY: '${{ github.workspace }}'
       CLOUDENV: 'AzureCloud'
-      MAPPED_APP_ID: ${{ secrets.SENTINEL_APP_ID }}
-      MAPPED_APP_SECRET: ${{ secrets.SENTINEL_APP_SECRET }} 
-      REPOTOKEN: ${{ secrets.REPOTOKEN }} 
+      MAPPED_APP_ID: ${{ secrets.SUB_BACKUP_APP_ID }}
+      MAPPED_APP_SECRET: ${{ secrets.SUB_BACKUP_APP_SECRET }} 
+      
+# Optional Github Repo token for generating Commit reports     
+#     REPOTOKEN: ${{ secrets.REPOTOKEN }} 
           
     steps:
       # Check out the repository
@@ -49,7 +51,7 @@ jobs:
       # Commit the changes to the repository
       - name: Commit and Push Repo
         run: |
-          git config --global user.email "laurie@laurierhodes.info"
+          git config --global user.email "username@domainname.org"
           git config --global user.name "Backup Service Account"
           git checkout main --
           git add --all
