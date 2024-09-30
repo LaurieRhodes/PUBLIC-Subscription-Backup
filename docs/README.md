@@ -100,8 +100,8 @@ Once deployed, the backup pipeline will run daily.
 
 Review daily reports by following the links from the root README,md
 
-[Code Overview](./docs/CodeOverview.md)
-
+[Code Overview](./CodeOverview.md)
+[Audit Reports](./AuditReports.md)
 
 ## License
 
