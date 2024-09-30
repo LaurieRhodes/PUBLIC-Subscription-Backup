@@ -86,6 +86,7 @@ This project requires that an App Registration / Service Principal be created an
 Add the following secrets to your GitHub repository.  
 
 SUB_BACKUP_APP_ID
+
 SUB_BACKUP_APP_SECRET
 
 REPOTOKEN ****
