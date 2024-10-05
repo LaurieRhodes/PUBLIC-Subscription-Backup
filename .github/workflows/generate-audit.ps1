@@ -11,8 +11,8 @@
 
 if ($($env:DIRECTORY)){$rootDir   = $($env:DIRECTORY)}
 
- 
- 
+
+
 #$ScriptDir     = Split-Path $script:MyInvocation.MyCommand.Path
 
 # Determine if script is being run on linux or windows by the direction
@@ -47,7 +47,7 @@ if ($BackupDir){
 
 <#
 if($OS -eq 'win' ){ Remove-Item $BackupDir\* -Recurse -Force }
-if($OS -eq 'linux' ){ 
+if($OS -eq 'linux' ){
 
 #
 
@@ -71,8 +71,8 @@ foreach ($folder in $foldersToDel){
 
 
 
- 
-$files     = Get-ChildItem "$($ScriptDir)$($Slash)audit-resources" -Filter "*.ps1" 
+
+$files     = Get-ChildItem "$($ScriptDir)$($Slash)audit-resources" -Filter "*.ps1"
 
 write-debug "$($ScriptDir)$($Slash)audit-resources"
 
@@ -87,7 +87,7 @@ write-debug "$($ScriptDir)$($Slash)audit-resources"
 for ($i=0; $i -lt $files.Count; $i++) {
 
 
-write-debug "$($files[$i].FullName)"     
+write-debug "$($files[$i].FullName)"
 
 $response =  invoke-expression -Command "$($files[$i].FullName) -reportdir $($ReportDir) -backupdir $($BackupDir) -moduledir $($ModuleDir) "
 

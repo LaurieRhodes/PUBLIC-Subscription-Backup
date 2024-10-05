@@ -1,19 +1,13 @@
 ﻿[CmdletBinding()]
     param(
-        #[Parameter(mandatory=$false)]
-        #[string]$reportdir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\reports",
-        #[Parameter(mandatory=$false)]
-        #[string]$backupdir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\json",
-        #[Parameter(mandatory=$false)]
-        #[string]$moduledir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\.github\workflows\modules",
         [Parameter(mandatory=$false)]
-        [psobject]$Filelist,      
+        [psobject]$Filelist,
         [Parameter(mandatory=$true)]
         [string]$reportdir,
         [Parameter(mandatory=$true)]
         [string]$backupdir,
         [Parameter(mandatory=$true)]
-        [string]$moduledir             
+        [string]$moduledir
     )
 
 
@@ -39,7 +33,7 @@ write-debug "Establishing Output Path $($outputpath)"
 
 # If a filelist hasn't been passed - create one
 if ( !($Filelist) ){
-$Filepathlist =  Get-ChildItem $backupdir -Filter "*.json" -Recurse | % { $_.FullName }
+$Filepathlist =  Get-ChildItem $backupdir -Filter "*.json" -Recurse | ForEach-Object { $_.FullName }
 
 Class oAZObject{
     [String]$type
@@ -53,7 +47,7 @@ foreach ($file in $Filepathlist){
 
   $jsonobject = Get-Jsonfile -Path $file
 
-     $otemp = New-Object oAZObject 
+     $otemp = New-Object oAZObject
      $otemp.type = $jsonobject.type
      $otemp.path = $file
 
@@ -77,7 +71,7 @@ if (Test-Path $outputpath) {
 # this will allow results to be sorted before being written to file
 
 Class oResult{
-    [String]$displayName   
+    [String]$displayName
     [String]$Name
     [String]$ResourceGroup
     [String]$enabled
@@ -95,10 +89,10 @@ foreach($file in $FileList){
  # Select the desired object type
  if ($file.Type -eq $ObjectType){
 
-    
-     $otemplate = Get-Content -Raw -Path  $file.Path | ConvertFrom-Json 
 
-     $otemp = New-Object oResult 
+     $otemplate = Get-Content -Raw -Path  $file.Path | ConvertFrom-Json
+
+     $otemp = New-Object oResult
      $otemp.DisplayName = $otemplate.properties.DisplayName
      $otemp.Name = $otemplate.Name
      $otemp.ResourceGroup = ($otemplate.id).split('/')[4]
@@ -118,7 +112,7 @@ foreach($file in $FileList){
         $tempobj = $tempobj.Replace("`r","")
         $tempobj = $tempobj.Replace("`n`n","`n")
 
-        out-file -InputObject $tempobj -FilePath -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append 
+        out-file -InputObject $tempobj -FilePath -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
 
        '```' | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
 
@@ -150,15 +144,15 @@ $header =@"
 
 $OutputArray | ForEach-Object {
 
-  "| [$($_.Displayname)]($($_.ResourceGroup)-$($_.name)$($slash)README.md)      | $($_.Name )     | $($_.ResourceGroup )   | $($_.enabled )   |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append 
-} 
+  "| [$($_.Displayname)]($($_.ResourceGroup)-$($_.name)$($slash)README.md)      | $($_.Name )     | $($_.ResourceGroup )   | $($_.enabled )   |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append
+}
 
 
 
 $footer = @"
 
 ![](..$($slash)img$($slash)logo.jpg)
-"@  
+"@
 
  $null = out-file -FilePath "$($outputpath)$($slash)README.md"  -Append -InputObject $footer
 

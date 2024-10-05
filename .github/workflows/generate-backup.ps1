@@ -16,7 +16,7 @@ $subscription  = $($env:SUBSCRIPTION)
 $tenant        = $($env:TENANT)
 $scope         = $($env:SCOPE)
 $appid         = ${env:MAPPED_APP_ID}
-$secret        = ${env:MAPPED_APP_SECRET} 
+$secret        = ${env:MAPPED_APP_SECRET}
 
 
 <#
@@ -71,7 +71,7 @@ write-debug "ModuleDir = $ModuleDir"
 
 
 
-function Clean-AzureObject(){ 
+function Clean-AzureObject(){
 <#
     Purpose:  Parsing function to remove read only properties from an object so the exported defintion may be used for redeployment
               Not neceassry for a basic audit.
@@ -92,7 +92,7 @@ function Clean-AzureObject(){
     )
 
     $azobject = ConvertFrom-Json $azobjectjson
-    
+
     # Remove common properties
     if ($azobject.PSObject.properties -match 'etag'){$azobject.PSObject.properties.remove('etag')}
 
@@ -135,7 +135,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
             ($azobject.properties.storageProfile.osDisk.managedDisk).PSObject.properties.remove('id')
 
 
-          #  # Handle each vm extension 
+          #  # Handle each vm extension
           #  For ($i=0; $i -le ($azobject.resources.Count -1); $i++) {
           #      $null = Invoke-azobjectbackup -Id $azobject.resources[$i].id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
           #  }
@@ -170,7 +170,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
               For ($i=0; $i -le ($azobject.properties.PrivateEndpointConnections.Count -1); $i++) {
                   $null = Invoke-azobjectbackup -Id $azobject.properties.PrivateEndpointConnections[$i].id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
               }
-            $azobject.properties.PrivateEndpointConnections=@()              
+            $azobject.properties.PrivateEndpointConnections=@()
             }catch{
               write-warning "PrivateEndpointConnections not available on obtect Microsoft.DocumentDB/databaseAccounts"
             }
@@ -195,7 +195,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
               For ($i=0; $i -le ($azobject.properties.PrivateEndpointConnections.Count -1); $i++) {
                   $null = Invoke-azobjectbackup -Id $azobject.properties.PrivateEndpointConnections[$i].id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
               }
-            $azobject.properties.PrivateEndpointConnections=@()              
+            $azobject.properties.PrivateEndpointConnections=@()
             }catch{
               write-warning "PrivateEndpointConnections not available on obtect Microsoft.EventHub/Namespaces"
             }
@@ -203,18 +203,18 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
             #Grab any Event Hub details
             $queryuri = "https://management.azure.com/$($azobject.id)/eventhubs?api-version=2024-01-01"
             $response =  $null
-            $response = Invoke-RestMethod -Uri $queryuri -Method GET -Headers $authHeader 
+            $response = Invoke-RestMethod -Uri $queryuri -Method GET -Headers $authHeader
              foreach ($eventhub in $response.value ){
               $null = Invoke-azobjectbackup -Id $eventhub.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
-            }           
+            }
 
             #Grab any Consumer Groups details
             $queryuri = "https://management.azure.com/$($azobject.id)/consumergroups?api-version=2024-01-01"
             $response =  $null
-            $response = Invoke-RestMethod -Uri $queryuri -Method GET -Headers $authHeader 
+            $response = Invoke-RestMethod -Uri $queryuri -Method GET -Headers $authHeader
              foreach ($eventhub in $response.value ){
               $null = Invoke-azobjectbackup -Id $eventhub.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
-            }           
+            }
 
 
        }
@@ -256,24 +256,24 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
 
                 foreach ($child in $children){
                     write-debug "Microsoft.Kusto/Clusters ---  Get-AzureObject -id $($azobject.Id)$($child) "
-                    $response = Get-AzureObject -id "$($azobject.Id)$($child)" -authHeader  $authHeader -apiversions $AzAPIVersions 
+                    $response = Get-AzureObject -id "$($azobject.Id)$($child)" -authHeader  $authHeader -apiversions $AzAPIVersions
 
                    foreach ($element in $response.value){
                         write-debug "Microsoft.Kusto/Clusters --- /databases Invoke-azobjectbackup -Id $element.id"
-                         $null = Invoke-azobjectbackup -Id $element.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader 
+                         $null = Invoke-azobjectbackup -Id $element.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
                          #Get Data Connections too
                          write-debug "Microsoft.Kusto/Clusters --- dataConnections Get-AzureObject -Id $($element.id)/dataConnections"
-                         $dconnections = Get-AzureObject -Id "$($element.id)/dataConnections" -authHeader  $authHeader -apiversions $AzAPIVersions 
+                         $dconnections = Get-AzureObject -Id "$($element.id)/dataConnections" -authHeader  $authHeader -apiversions $AzAPIVersions
                          foreach ($dc in $dconnections.value){
                             write-debug "Microsoft.Kusto/Clusters --- dataConnections Invoke-azobjectbackup -Id $($dc.id)"
-                            $null = Invoke-azobjectbackup -Id $dc.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader 
+                            $null = Invoke-azobjectbackup -Id $dc.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
                             write-debug "Microsoft.Kusto/Clusters --- Backup of $($dc.id) complete"
                          }
                   }
                 }
 
-            
-       }       
+
+       }
        "Microsoft.Logic/workflows" {
             ($azobject.properties).PSObject.properties.remove('provisioningState')
             ($azobject.properties).PSObject.properties.remove('createdTime')
@@ -340,7 +340,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
                 #export as well
                 $null = Invoke-azobjectbackup -Id $azobject.properties.ipConfigurations[$i].id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
             }
-            
+
        }
        "Microsoft.Network/loadBalancers/inboundNatRules" {
             ($azobject.properties).PSObject.properties.remove('provisioningState')
@@ -393,15 +393,15 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
 
        "Microsoft.OperationalInsights/queryPacks" {
  #           ($azobject.properties).PSObject.properties.remove('provisioningState')
-             
-            # I need to preserve eack query in a pack as a distinct object            
+
+            # I need to preserve eack query in a pack as a distinct object
             $queryPackobjects  =@()
 
             $queryuri = "https://management.azure.com/$($azobject.id)/queries?api-version=2019-09-01&includeBody=true"
 
             # Get the first set of returned objects into an array
             # There are likely to be many pages worth - if so, the response will have a nextlink url
-            $response             = Invoke-RestMethod -Uri $queryuri -Method GET -Headers $authHeader 
+            $response             = Invoke-RestMethod -Uri $queryuri -Method GET -Headers $authHeader
             $queryPackobjects += $response.value
 
             while($response.nextLink)
@@ -416,13 +416,13 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
             foreach ($query in $queryPackobjects){
               $null = Invoke-azobjectbackup -Id $query.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
             }
-                     
-                    
+
+
        }
        # Sentinel
        "Microsoft.OperationsManagement/solutions" {
             if ($azobject.plan.product -eq "OMSGallery/SecurityInsights"){
-                # Retrieve Sentinel Specific settings 
+                # Retrieve Sentinel Specific settings
                 # This is a Sentinel Workspace and should have a number of elements backed up
                 # Entity Queries and Entity Query Templates are enormous... not normally of benefit to backup
                 $children=@(
@@ -432,17 +432,17 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
                     "/providers/Microsoft.SecurityInsights/automationRules",
                     "/providers/Microsoft.SecurityInsights/dataConnectors"
                 )
-                   # Other potential Sentinel related objects may be added from below                
+                   # Other potential Sentinel related objects may be added from below
                    # "/providers/Microsoft.SecurityInsights/alertRuleTemplates", #Far too many to backup
                    # "/providers/Microsoft.SecurityInsights/bookmarks",   #bookmarks are sensitive for hunting
                    # "/providers/Microsoft.SecurityInsights/entityQueryTemplates",
-                   # "/providers/Microsoft.SecurityInsights/entityQueries"                
+                   # "/providers/Microsoft.SecurityInsights/entityQueries"
 
                 foreach ($child in $children){
 
-                 
+
                         try {
-                            $response = Get-AzureObject -id "$($azobject.properties.workspaceResourceId)$($child)" -authHeader  $authHeader -apiversions $AzAPIVersions 
+                            $response = Get-AzureObject -id "$($azobject.properties.workspaceResourceId)$($child)" -authHeader  $authHeader -apiversions $AzAPIVersions
                         }
                         catch {
                             Write-Error "Failed to retrieve Azure object: $_"
@@ -450,9 +450,9 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
                             $response = $null
                         }
                     foreach ($element in $response.value){
-                       
+
                         try {
-                            $null = Invoke-azobjectbackup -Id $element.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader 
+                            $null = Invoke-azobjectbackup -Id $element.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
                         }
                         catch {
                             Write-Warning "Failed to retrieve Azure object: $_"
@@ -461,7 +461,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
                         }
                    }
                 }
-                 
+
             }
 
        }
@@ -497,7 +497,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
        "Microsoft.Network/virtualNetworks" {
             ($azobject.properties).PSObject.properties.remove('provisioningState')
             ($azobject.properties).PSObject.properties.remove('resourceGuid')
-            
+
             # Handle each subnet as separate objects
             For ($i=0; $i -le ($azobject.properties.subnets.Count -1); $i++) {
                 $null = Invoke-azobjectbackup -Id $azobject.properties.subnets[$i].id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
@@ -529,7 +529,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
             ($azobject.properties).PSObject.properties.remove('modifiedDate')
             ($azobject.properties.sku).PSObject.properties.remove('lastSkuUpdate')
             ($azobject.properties.workspaceCapping).PSObject.properties.remove('quotaNextResetTime')
-            
+
             # Try to capture Security EventCollection Configuration if the workspace is a security workspace
                  $children=@(
                     "/scopedPrivateLinkProxies",
@@ -539,13 +539,13 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
                     "/linkedStorageAccounts",
                     "/tables",
                     "/storageInsightConfigs",
-                    "/linkedServices",  
+                    "/linkedServices",
                     "/dataExports",
-                    "/savedSearches"                                      
+                    "/savedSearches"
                 )
 
                  $children=@(
-                    "/savedSearches"                                      
+                    "/savedSearches"
                 )
                 foreach ($child in $children){
 
@@ -556,13 +556,13 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
                    }
                    catch{
                      write-warning "Get-AzureObject failed for ID $($azobject.Id)$($child)"
-                   } 
-                   foreach ($element in $response.value){
-                         $null = Invoke-azobjectbackup -Id $element.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader 
                    }
-                }           
-            
-            
+                   foreach ($element in $response.value){
+                         $null = Invoke-azobjectbackup -Id $element.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
+                   }
+                }
+
+
        }
        "Microsoft.Portal/dashboards" {
 
@@ -591,7 +591,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
             catch{
                 write-warning "clean object principalId failed"
             }
-            
+
             write-debug " Microsoft.RecoveryServices/vaults clean complete"
 
 
@@ -602,19 +602,19 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
        }
        "Microsoft.SecurityInsights/alertRules" {
                 $azobject.PSObject.properties.remove('etag')
-                
+
                 # All alert rules have actions
                 $children=@(
                     "/actions"
                 )
 
                 foreach ($child in $children){
-                    write-debug "Microsoft.SecurityInsights/alertRules ---  Get-AzureObject -id $($azobject.Id)$($child) "
-                    $response = Get-AzureObject -id "$($azobject.Id)$($child)" -authHeader  $authHeader -apiversions $AzAPIVersions 
+                    write-debug "Microsoft.SecurityInsights/alertRules ---  Get-AzureObject -id $($azobject.Id)$($child)"
+                    $response = Get-AzureObject -id "$($azobject.Id)$($child)" -authHeader  $authHeader -apiversions $AzAPIVersions
 
                    foreach ($element in $response.value){
                         write-debug "Microsoft.SecurityInsights/alertRules --- child Invoke-azobjectbackup -Id $element.id"
-                         $null = Invoke-azobjectbackup -Id $element.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader 
+                         $null = Invoke-azobjectbackup -Id $element.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
                       }
 
                 }
@@ -625,7 +625,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
             ($azobject.properties).PSObject.properties.remove('creationTime')
             ($azobject.properties).PSObject.properties.remove('secondaryLocation')
             ($azobject.properties).PSObject.properties.remove('statusOfSecondary')
-            
+
             # Handle any Private Endpoint Connection as separate objects
             # catch elements without Private Endpoints
 
@@ -652,14 +652,14 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
             catch{
                 write-warning "Clean Microsoft.Storage/storageAccounts $($azobject.id)/fileServices/default failed $($Error[0].Exception.GetType().FullName)"
             }
-            
+
             try{
             $null = Invoke-azobjectbackup -Id "$($azobject.id)/queueServices/default" -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
             }
             catch{
                 write-warning "Clean Microsoft.Storage/storageAccounts $($azobject.id)/queueServices/default failed $($Error[0].Exception.GetType().FullName)"
             }
-            
+
             try{
             $null = Invoke-azobjectbackup -Id "$($azobject.id)/tableServices/default" -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
             }
@@ -688,9 +688,9 @@ if ($azobject ){ convertto-json -InputObject $azobject -Depth 50}else{return $nu
 function Invoke-azobjectbackup(){
 <#
     Purpose:  Backs Up an Azure object onto the file system as a json object
-              
 
-#> 
+
+#>
     [CmdletBinding()]
     param(
         [Parameter(mandatory=$true)]
@@ -719,9 +719,9 @@ catch {
 }
 
 
-if($object.name){
-    $objectname = ($object.name).replace(' ','')
-}
+#if($object.name){
+#    $objectname = ($object.name).replace(' ','')
+#}
 
 $azobjectjson = $null
 
@@ -748,7 +748,7 @@ write-debug "(function Invoke-azobjectbackup) Clean Object Complete"
 
 
 # Split the Id string into an array so that different pieces can be retrieved
-$filename     = $Id.split('/')[-1]
+#$filename     = $Id.split('/')[-1]
 $idarray      = $Id.Split("/")
 
 
@@ -758,14 +758,14 @@ if ($idarray[2] -eq "Microsoft.Authorization"){Start-Sleep -Milliseconds 500  }
 # Objects will be written into folders based on their Resource Group unless they are special objects
 
 write-debug "(function Invoke-azobjectbackup) Dirpath ResourceGroup = $dirpath"
-$dirpath = "$($BackupDir)$($slash)$($idarray[4].ToLower())$($slash)" 
+$dirpath = "$($BackupDir)$($slash)$($idarray[4].ToLower())$($slash)"
 
 
 
 # Keep all exported Policy Definitions together
 
 if ($idarray[3] -eq "policyDefinitions"){$dirpath = "$($BackupDir)$($slash)policydefinitions$($slash)" }
-if ($idarray[3] -eq "policySetDefinitions"){$dirpath = "$($BackupDir)$($slash)policyDefinition$($slash)" }
+if ($idarray[3] -eq "policySetDefinitions"){$dirpath = "$($BackupDir)$($slash)policyDefinition$($slash)"}
 
 # Keep Security objects together
 
@@ -775,7 +775,7 @@ if ($idarray[4] -eq "Microsoft.Security"){$dirpath = "$($BackupDir)$($slash)Micr
 if ($object.type -eq "Microsoft.Authorization/roleAssignments" ){
 
     # The actual path will be the scope - not the object ID... either at the subscription level
-    $dirpath = "$($BackupDir)$($slash)$($($object.properties.scope.split('/')[2]).ToLower())$($slash)roleAssignments$($slash)" 
+    $dirpath = "$($BackupDir)$($slash)$($($object.properties.scope.split('/')[2]).ToLower())$($slash)roleAssignments$($slash)"
     # ... or at the Resource Group Level
     if ($object.properties.scope.split('/')[4]){$dirpath = "$($BackupDir)$($slash)$($($object.properties.scope.split('/')[4]).ToLower())$($slash)roleAssignments$($slash)" }
 }
@@ -799,7 +799,7 @@ for ($i=0; $i -lt $IDArray.length; $i++) {
   if ($IDArray[$i] -eq 'providers'){$provIndex =  $i}
 }
 
-<# 
+<#
    Backup file name gets messy
    Odd cases must be accounted for like virtual machine attached packages where many with the same names will exist in the
    same Resource Group.
@@ -813,7 +813,7 @@ for ($i=0; $i -lt $IDArray.length; $i++) {
   # to validate what the object type is.
   # The last provider element in the string is always the root namespace so we have to find
   # the last 'provider' element
-  
+
    for ($i=0; $i -lt $IDArray.length; $i++) {
 	   if ($IDArray[$i] -eq 'providers'){$provIndex =  $i}
    }
@@ -824,7 +824,7 @@ for ($i=0; $i -lt $IDArray.length; $i++) {
   $elementcount=1
   $providertype = @()
 
-  
+
   # Starting at the provider, until the end of the string, stack each potential overload if it exists
   for ($i=$provIndex; $i -lt $IDArray.length; $i++) {
     switch($elementcount){
@@ -845,7 +845,7 @@ if ($IDArray.length -lt 8 ){
 }
 else{
 
-        $outputfilename =  "$($objecttype)__`($($backupfile)`)__$($idarray[-1] )" 
+        $outputfilename =  "$($objecttype)__`($($backupfile)`)__$($idarray[-1] )"
  #       if(!($objectname -eq $backupfile )){  $outputfilename = "$( $outputfilename)__`($($backupfile)`)"   }
 }
 
@@ -876,22 +876,22 @@ write-debug "(function Invoke-azobjectbackup) outfile = $($dirpath)$($outputfile
 if ( $azobjectjson ){
 
     # If the directory doesnt exist, create it.
-    if (!(Test-Path -Path $dirpath)){ 
+    if (!(Test-Path -Path $dirpath)){
       write-debug "creating directory $dirpath"
-      $null = New-Item -Path $dirpath -ItemType 'Directory' -Force   
+      $null = New-Item -Path $dirpath -ItemType 'Directory' -Force
     }
 
   # somewhere quoted null is being produced with workbooks?
   # hack to stop those files being written - only write json
-  if ($azobjectjson.Contains('{')){  
+  if ($azobjectjson.Contains('{')){
 
     write-debug "(function Invoke-azobjectbackup) azobjectjson contains {"
     write-debug "(function Invoke-azobjectbackup) out-File -FilePath $($dirpath)$( $outputfilename ).json"
-    
-    $null = Out-File -FilePath "$($dirpath)$( $outputfilename ).json" -InputObject $azobjectjson  -Force 
-    
+
+    $null = Out-File -FilePath "$($dirpath)$( $outputfilename ).json" -InputObject $azobjectjson  -Force
+
     write-debug "(function Invoke-azobjectbackup) outfile written"
-    
+
 
   }
 
@@ -902,7 +902,7 @@ if ( $azobjectjson ){
 
 
 # Skip diagnostics - its all legacy now & it was a nasty backup that was prone to failure
-# 
+#
 # if (!($norecurse)){
 #        Invoke-DiagnosticsConfigSearch -Id $id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
 #  }
@@ -917,9 +917,9 @@ function Invoke-DiagnosticsConfigSearch(){
 <#
     Purpose:  Backs Up hidden Azure object onto the file system as a json objects
               Diagnostics Settings can only be determined by querying for a diagnostics settings file
-              
 
-#>  
+
+#>
     [CmdletBinding()]
     param(
         [Parameter(mandatory=$true)]
@@ -960,15 +960,15 @@ $ignoretypes=@(
 "microsoft.insights/datacollectionendpoints",
 "microsoft.insights/metricalerts",
 "microsoft.insights/scheduledqueryrules",
-"microsoft.insights/workbooks", 
+"microsoft.insights/workbooks",
 "Microsoft.MachineLearningServices/workspaces",
 "microsoft.network/applicationsecuritygroups",
 "microsoft.network/firewallpolicies",
 "microsoft.network/networkinterfaces/ipconfigurations",
 "microsoft.network/networkprofiles",
-"microsoft.network/networkwatchers/flowlogs", 
+"microsoft.network/networkwatchers/flowlogs",
 "microsoft.network/privatednszones/virtualnetworklinks",
-"microsoft.network/routetables", 
+"microsoft.network/routetables",
 "microsoft.network/serviceendpointpolicies",
 "microsoft.network/virtualhubs",
 "microsoft.network/virtualnetworks/subnets",
@@ -977,7 +977,7 @@ $ignoretypes=@(
 "microsoft.network/privatednszones/virtualnetworklinks",
 "microsoft.network/privatednszones/virtualnetworklinks",
 "microsoft.operationsmanagement/solutions",
-"microsoft.portal/dashboards", 
+"microsoft.portal/dashboards",
 "Microsoft.Resources/resourceGroups",
 "Microsoft.SecurityInsights/sourcecontrols",
 "Microsoft.SecurityInsights/settings",
@@ -986,10 +986,10 @@ $ignoretypes=@(
 "Microsoft.SecurityInsights/bookmarks",
 "Microsoft.SecurityInsights/entityQueries",
 "Microsoft.SecurityInsights/entityQueryTemplates",
-"microsoft.solutions/applications", 
+"microsoft.solutions/applications",
 "microsoft.sqlvirtualmachine/sqlvirtualmachines",
 "microsoft.visualstudio/account",
-"microsoft.web/connections" 
+"microsoft.web/connections"
 )
 
 
@@ -1045,12 +1045,12 @@ if ( $object.value){
     }
 
 
-$filename = $Id.split('/')[-1]
+#$filename = $Id.split('/')[-1]
 $idarray=$Id.Split("/")
 #Resource Group
 
 # Force directory case notation to lower for consistency
-$dirpath = "$($BackupDir)$($slash)$($idarray[4].ToLower())\" 
+$dirpath = "$($BackupDir)$($slash)$($idarray[4].ToLower())\"
 
 if (!(Test-Path -Path $dirpath)){ New-Item -Path $dirpath -ItemType 'Directory' -Force   }
 
@@ -1058,18 +1058,18 @@ if (!(Test-Path -Path $dirpath)){ New-Item -Path $dirpath -ItemType 'Directory' 
 $backupfile = $dirpath
 For ($i=($idarray.Count -3); $i -le ($idarray.Count -1); $i++) {
 
-        if ($i -eq ($idarray.Count -3)){ 
-                $backupfile = $backupfile + "$($idarray[$i])" 
+        if ($i -eq ($idarray.Count -3)){
+                $backupfile = $backupfile + "$($idarray[$i])"
             }
         else
             {
-                $backupfile = $backupfile + "__$($idarray[$i])" 
+                $backupfile = $backupfile + "__$($idarray[$i])"
         }
-   
+
 }
 
 #Backup File will be an object filename representation within a RG directory structure
-#$backupfile 
+#$backupfile
 $backupfile = $backupfile.Replace(' ','')
 
 if ( $azobjectjson ){
@@ -1081,10 +1081,10 @@ if ( $azobjectjson ){
 
             $backupfile = $backupfile.Substring(0, 120)
     }
-    
+
     write-debug "(function Invoke-DiagnosticsConfigSearch) Out-File -FilePath $($backupfile).json"
-    
-  Out-File -FilePath "$($backupfile).json" -InputObject $azobjectjson  -Force 
+
+  Out-File -FilePath "$($backupfile).json" -InputObject $azobjectjson  -Force
 }
 
 } # object
@@ -1222,7 +1222,7 @@ $null = Remove-Item $BackupDir$($slash)* -Recurse -Force
 #Linux dir removal only valid for Github
 <#
 if($OS -eq 'win' ){ Remove-Item $BackupDir$($slash)* -Recurse -Force }
-if($OS -eq 'linux' ){ 
+if($OS -eq 'linux' ){
 
 #
 
@@ -1271,23 +1271,23 @@ param(
   Parameters:   -SubscriptionId      = The subscription ID of the environment to connect to.
                 -Header              = A hashtable (header) with valid authentication for Azure Management
 
-  Example:  
-    
+  Example:
+
              Get-AzureAPIVersions = Get-AnalyticsWorkspaceKey `
                                       -Header $header `
-                                      -SubscriptionId "ed4ef888-5466-401c-b77a-6f9cd7cc6815" 
+                                      -SubscriptionId "ed4ef888-5466-401c-b77a-6f9cd7cc6815"
 #>
     $dict = @{}
-       
+
     Try{
       $uri = "https://management.azure.com/subscriptions/$($SubscriptionID)/providers/?api-version=2015-01-01"
-      
+
       Write-Debug "(Get-AzureAPIVersions calling - Invoke-RestMethod -Uri $uri"
-      
-      $result = Invoke-RestMethod -Uri $uri -Method GET -Headers $Header 
-      
+
+      $result = Invoke-RestMethod -Uri $uri -Method GET -Headers $Header
+
       Write-Debug "(Get-AzureAPIVersions calling - Invoke-RestMethod -Uri $uri"
-    $namespaces = $result.value 
+    $namespaces = $result.value
 
     foreach ($namespace in $namespaces){
        foreach ($resource in $namespace.resourceTypes){
@@ -1298,7 +1298,7 @@ param(
      }
 
      #return dictionary
-     $dict      
+     $dict
     } catch {
       # catch any authentication or api errors
       Throw "Get-AzureAPIVersions failed - $($_.ErrorDetails.Message)"
@@ -1317,16 +1317,16 @@ $AzAPIVersions = Get-AzureAPIVersions -header $authHeader -SubscriptionID $subsc
 
 
 
-#write-debug $(convertto-json -inputobject $subscriptionobjects) 
+#write-debug $(convertto-json -inputobject $subscriptionobjects)
 
 foreach ($azureobject in $subscriptionobjects ){
-    
+
 
     $authHeader = Get-Header -scope $scope  -Tenant $tenant -AppId $appid -secret $secret
 
 
         try {
-                $null = Invoke-azobjectbackup -Id $azureobject.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader 
+                $null = Invoke-azobjectbackup -Id $azureobject.id -BackupDir $BackupDir -AzAPIVersions $AzAPIVersions -authHeader $authHeader
         }
         catch {
             Write-Warning "Object Backup failed for object with Id: $_"

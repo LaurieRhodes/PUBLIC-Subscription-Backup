@@ -1,13 +1,13 @@
 ﻿[CmdletBinding()]
     param(
         [Parameter(mandatory=$false)]
-        [psobject]$Filelist,      
+        [psobject]$Filelist,
         [Parameter(mandatory=$false)]
         [string]$reportdir,
         [Parameter(mandatory=$false)]
         [string]$backupdir,
         [Parameter(mandatory=$false)]
-        [string]$moduledir             
+        [string]$moduledir
     )
 
 
@@ -42,7 +42,7 @@ write-debug "$Filelist =  Get-ChildItem $backupdir -Filter *.json -Recurse"
 
 # If a filelist hasn't been passed - create one
 if ( !($Filelist) ){
-$Filepathlist =  Get-ChildItem $backupdir -Filter "*.json" -Recurse | % { $_.FullName }
+$Filepathlist =  Get-ChildItem $backupdir -Filter "*.json" -Recurse | ForEach-Object { $_.FullName }
 
 Class oAZObject{
     [String]$type
@@ -56,7 +56,7 @@ foreach ($file in $Filepathlist){
 
   $jsonobject = Get-Jsonfile -Path $file
 
-     $otemp = New-Object oAZObject 
+     $otemp = New-Object oAZObject
      $otemp.type = $jsonobject.type
      $otemp.path = $file
 
@@ -87,7 +87,7 @@ if (Test-Path $outputpath) {
 Class oResult{
     [String]$Name
     [String]$ResourceGroup
-    [String]$IsEnabled   
+    [String]$IsEnabled
 }
 
 
@@ -105,21 +105,21 @@ foreach($file in $FileList){
  if ($file.Type -eq $ObjectType){
 
     write-debug "File of Objecttype = $ObjectType found"
-    
-    
-     $otemplate = Get-Content -Raw -Path  $file.Path | ConvertFrom-Json 
 
-     $otemp = New-Object oResult 
+
+     $otemplate = Get-Content -Raw -Path  $file.Path | ConvertFrom-Json
+
+     $otemp = New-Object oResult
      $otemp.Name = $otemplate.Name
      $otemp.ResourceGroup = ($otemplate.id).split('/')[4]
      $otemp.IsEnabled = $otemplate.properties.IsEnabled
 
     write-debug "File $($otemp.Name) added to array"
-    
+
      $OutputArray += $otemp
 
     write-debug "Creating directory $($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)"
-    
+
       $null = New-Item -ItemType Directory -Force -Path "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)"
 
     write-debug "creating file $($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md"
@@ -127,11 +127,11 @@ foreach($file in $FileList){
      # Create YAML copies of the Config Files
        "# $($otemplate.name)`r`n" | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Force
        '```' | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
-       
-     
-        ConvertTo-Yaml -inputObject   $otemplate | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append 
-       
-       
+
+
+        ConvertTo-Yaml -inputObject   $otemplate | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
+
+
       # ConvertTo-Yaml -inputObject   $otemplate | write-debug
        '```' | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
 
@@ -163,13 +163,13 @@ $header =@"
 
 $OutputArray | ForEach-Object {
 
-  "| [$($_.name)]($($_.ResourceGroup)-$($_.name)$($slash)README.md)         | $($_.ResourceGroup )   | $($_.IsEnabled )   |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append 
-} 
+  "| [$($_.name)]($($_.ResourceGroup)-$($_.name)$($slash)README.md)         | $($_.ResourceGroup )   | $($_.IsEnabled )   |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append
+}
 
 $footer = @"
 
 ![](..$($slash)img$($slash)logo.jpg)
-"@  
+"@
 
  $null = out-file -FilePath "$($outputpath)$($slash)README.md"  -Append -InputObject $footer
 

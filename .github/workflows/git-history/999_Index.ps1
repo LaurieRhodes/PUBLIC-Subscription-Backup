@@ -1,21 +1,13 @@
 ﻿[CmdletBinding()]
     param(
-        #[Parameter(mandatory=$false)]
-        #[string]$reportdir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\reports",
-        #[Parameter(mandatory=$false)]
-        #[string]$backupdir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\json",
-        #[Parameter(mandatory=$false)]
-        #[string]$githistorydir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\githistory",
-        #[Parameter(mandatory=$false)]
-        #[string]$moduledir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\.github\workflows\modules",
         [Parameter(mandatory=$true)]
-        [string]$githistorydir,   
+        [string]$githistorydir,
         [Parameter(mandatory=$true)]
         [string]$reportdir,
         [Parameter(mandatory=$true)]
         [string]$backupdir,
         [Parameter(mandatory=$true)]
-        [string]$moduledir             
+        [string]$moduledir
     )
 
 
@@ -33,7 +25,7 @@ if ((Get-ChildItem Env:PATH).Value -Match '/'){ $OS='linux'}else{$OS='win'}
 if($OS -eq 'win' ) { $slash = "\" }
 if($OS -eq 'linux'){ $slash = "/"}
 
-# "deviceManagement\deviceConfigurations"
+
 $files = Get-ChildItem "$($githistorydir)" -Filter "README.md" -Recurse -Depth 1
 
 #The output of the Index will be the root folder
@@ -47,7 +39,7 @@ New-Item -ItemType Directory -Force -Path $outputpath
 
 Class oResult{
     [String]$ReportName
-    [String]$Path   
+    [String]$Path
     [String]$IsModified
 }
 
@@ -60,10 +52,10 @@ $OutputArray =@()
 for ($i=0; $i -lt $files.Count; $i++) {
 
     # Get the first line of each README file
-     $otemplate = Get-Content -Path $files[$i].FullName 
+     $otemplate = Get-Content -Path $files[$i].FullName
 
 
-     $otemp = New-Object oResult 
+     $otemp = New-Object oResult
 
      # First heading line of each MD file is the title of the report
      $Reportname = $otemplate -match "# "
@@ -73,16 +65,16 @@ for ($i=0; $i -lt $files.Count; $i++) {
 
      # Path variable needs to be a relative path
      $relativepath = ($files[$i].FullName).Substring( $githistorydir.Length +1 ,(($files[$i].FullName).Length - ($githistorydir.Length +1)))
-     $otemp.Path = $relativepath 
+     $otemp.Path = $relativepath
 
      #  // TODO Git diff
      # $otemp.IsModified
-     
+
      # Don't create a circular link to the root report
      if ($otemp.Path -ne "README.md"){
         $OutputArray += $otemp
-      } 
-      
+      }
+
 }
 
 #  Sort the output
@@ -111,14 +103,14 @@ $header =@"
 $OutputArray | ForEach-Object {
 
 
-  "| $($_.ReportName)     | [$($_.Path)]($($_.Path))        | $($_.IsModified )         |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append 
+  "| $($_.ReportName)     | [$($_.Path)]($($_.Path))        | $($_.IsModified )         |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append
 
-} 
+}
 
 
 $footer = @"
 
 ![](..$($slash)reports$($slash)img$($slash)logo.jpg)
-"@  
+"@
 
  $null = out-file -FilePath "$($outputpath)$($slash)README.md"  -Append -InputObject $footer

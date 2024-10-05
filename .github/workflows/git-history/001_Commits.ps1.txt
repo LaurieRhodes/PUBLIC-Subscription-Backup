@@ -1,13 +1,13 @@
 ﻿[CmdletBinding()]
     param(
         [Parameter(mandatory=$true)]
-        [string]$githistorydir,   
+        [string]$githistorydir,
         [Parameter(mandatory=$true)]
         [string]$reportdir,
         [Parameter(mandatory=$true)]
         [string]$backupdir,
         [Parameter(mandatory=$true)]
-        [string]$moduledir             
+        [string]$moduledir
     )
 
 
@@ -57,7 +57,7 @@ Class oResult{
     [String]$Date
     [String]$committer
     [String]$message
-    [String]$View  
+    [String]$View
 }
 
 
@@ -80,14 +80,14 @@ $result = Invoke-RestMethod -Uri $url -Headers @{
         'accept'  = 'application/vnd.github+json'
         'Authorization' = 'Bearer ' + $env:REPOTOKEN
         'X-GitHub-Api-Version' = '2022-11-28'
-    } -Method GET 
+    } -Method GET
 
 foreach ($commit in $result){
 
-     $otemp = New-Object oResult 
+     $otemp = New-Object oResult
      $otemp.Date = ($commit.commit.committer).date
      $otemp.committer  = ($commit.commit.committer).name
-     
+
      #Remove characters from message characters that break the markdown table presentation
      $message = $commit.commit.message
      $message = $message.replace("`r`n",'')
@@ -120,13 +120,13 @@ View an archive of file changes on particular commits
 
 $OutputArray | ForEach-Object {
 
-  "| $($_.date)    | $($_.committer)     | $($_.message)    | $($_.view)    |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append 
-} 
+  "| $($_.date)    | $($_.committer)     | $($_.message)    | $($_.view)    |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append
+}
 
 $footer = @"
 
 ![](..$($slash)..$($slash)reports$($slash)img$($slash)logo.jpg)
-"@  
+"@
 
  $null = out-file -FilePath "$($outputpath)$($slash)README.md"  -Append -InputObject $footer
 

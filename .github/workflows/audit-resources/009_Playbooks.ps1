@@ -1,13 +1,13 @@
 ﻿[CmdletBinding()]
     param(
         [Parameter(mandatory=$false)]
-        [psobject]$Filelist,      
+        [psobject]$Filelist,
         [Parameter(mandatory=$false)]
         [string]$reportdir,
         [Parameter(mandatory=$false)]
         [string]$backupdir,
         [Parameter(mandatory=$false)]
-        [string]$moduledir             
+        [string]$moduledir
     )
 
 <#
@@ -20,10 +20,6 @@ Purpose is to generate .md files for Device\Configurations
 $ObjectType = "Microsoft.Logic/workflows"
 $Friendlyname = "Playbooks"
 
-
-#$reportdir="C:\Repos\az-subscription-backup\reports"
-#$backupdir="C:\Repos\az-subscription-backup\json"
-#$moduledir="C:\Repos\az-subscription-backup\.pipelines\modules"
 
 
 
@@ -44,7 +40,7 @@ write-debug "Establishing Output Path $($outputpath)"
 
 # If a filelist hasn't been passed - create one
 if ( !($Filelist) ){
-$Filepathlist =  Get-ChildItem $backupdir -Filter "*.json" -Recurse | % { $_.FullName }
+$Filepathlist =  Get-ChildItem $backupdir -Filter "*.json" -Recurse | ForEach-Object { $_.FullName }
 
 Class oAZObject{
     [String]$type
@@ -58,7 +54,7 @@ foreach ($file in $Filepathlist){
 
   $jsonobject = Get-Jsonfile -Path $file
 
-     $otemp = New-Object oAZObject 
+     $otemp = New-Object oAZObject
      $otemp.type = $jsonobject.type
      $otemp.path = $file
 
@@ -91,7 +87,7 @@ if (Test-Path $outputpath) {
 Class oResult{
     [String]$Name
     [String]$displayName
-    [String]$ResourceGroup  
+    [String]$ResourceGroup
 }
 
 
@@ -107,11 +103,11 @@ foreach($file in $FileList){
  if ($file.Type -eq $ObjectType){
 
     write-debug "File of Objecttype = $ObjectType found"
-    
-    
-     $otemplate = Get-Content -Raw -Path  $file.Path | ConvertFrom-Json 
 
-     $otemp = New-Object oResult 
+
+     $otemplate = Get-Content -Raw -Path  $file.Path | ConvertFrom-Json
+
+     $otemp = New-Object oResult
      $otemp.Displayname = $otemplate.properties.displayName
      $otemp.Name = $otemplate.Name
 
@@ -129,9 +125,9 @@ foreach($file in $FileList){
      # Create YAML copies of the Config Files
        "# $($otemp.DisplayName)`r`n" | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Force
        '```' | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
-       ConvertTo-Yaml -inputObject   $otemplate | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append 
+       ConvertTo-Yaml -inputObject   $otemplate | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
        '```' | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
-   
+
 
  }
 }
@@ -162,12 +158,12 @@ $header =@"
 $OutputArray | ForEach-Object {
 
   " | [$($_.Name)]($($_.ResourceGroup )-$($_.name)$($slash)README.md)         | $($_.ResourceGroup )   |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append 
-} 
+}
 
 $footer = @"
 
 ![](..$($slash)img$($slash)logo.jpg)
-"@  
+"@
 
  $null = out-file -FilePath "$($outputpath)$($slash)README.md"  -Append -InputObject $footer
 

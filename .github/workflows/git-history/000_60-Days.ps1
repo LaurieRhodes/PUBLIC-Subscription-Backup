@@ -9,13 +9,13 @@
         #[Parameter(mandatory=$false)]
         #[string]$moduledir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\.github\workflows\modules",
         [Parameter(mandatory=$true)]
-        [string]$githistorydir,   
+        [string]$githistorydir,
         [Parameter(mandatory=$true)]
         [string]$reportdir,
         [Parameter(mandatory=$true)]
         [string]$backupdir,
         [Parameter(mandatory=$true)]
-        [string]$moduledir             
+        [string]$moduledir
     )
 
 
@@ -60,7 +60,7 @@ if (Test-Path $outputpath) {
 Class oResult{
     [String]$Date
     [String]$Day
-    [String]$View  
+    [String]$View
 }
 
 
@@ -76,9 +76,9 @@ Do {
     "$($targetdate.DayOfWeek)  $($targetdate.Day) $((Get-Culture).DateTimeFormat.GetMonthName($targetdate.Month)) $($targetdate.Year)"
 
 
-     $otemp = New-Object oResult 
+     $otemp = New-Object oResult
      $otemp.Date = "$($targetdate.Day) $((Get-Culture).DateTimeFormat.GetMonthName($targetdate.Month)) $($targetdate.Year)"
-     $otemp.Day  = $($targetdate.DayOfWeek) 
+     $otemp.Day  = $($targetdate.DayOfWeek)
      if ($env:GITHUB_SERVER_URL){
         $otemp.View = "[view repo]($($env:GITHUB_SERVER_URL)/$($env:GITHUB_REPOSITORY)/tree/HEAD@%7B$($targetdate.Year)-$($targetdate.Month)-$($targetdate.Day)%7D)"
       }else{
@@ -119,13 +119,13 @@ View an archive of the repository as a point in time from the previous 60 days
 
 $OutputArray | ForEach-Object {
 
-  "| $($_.date)    | $($_.day)    | $($_.view)    |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append 
-} 
+  "| $($_.date)    | $($_.day)    | $($_.view)    |" | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append
+}
 
 $footer = @"
 
 ![](..$($slash)..$($slash)reports$($slash)img$($slash)logo.jpg)
-"@  
+"@
 
  $null = out-file -FilePath "$($outputpath)$($slash)README.md"  -Append -InputObject $footer
 

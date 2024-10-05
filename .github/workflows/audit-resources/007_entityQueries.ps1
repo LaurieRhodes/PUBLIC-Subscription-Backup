@@ -1,19 +1,13 @@
 ﻿[CmdletBinding()]
     param(
-        #[Parameter(mandatory=$false)]
-        #[string]$reportdir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\reports",
-        #[Parameter(mandatory=$false)]
-        #[string]$backupdir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\json",
-        #[Parameter(mandatory=$false)]
-        #[string]$moduledir="C:\Users\Laurie\Documents\GitHub\Sentinel-as-Code\.github\workflows\modules",
         [Parameter(mandatory=$false)]
-        [psobject]$Filelist,      
+        [psobject]$Filelist,
         [Parameter(mandatory=$true)]
         [string]$reportdir,
         [Parameter(mandatory=$true)]
         [string]$backupdir,
         [Parameter(mandatory=$true)]
-        [string]$moduledir             
+        [string]$moduledir
     )
 
 
@@ -43,7 +37,7 @@ write-debug "Establishing Output Path $($outputpath)"
 
 # If a filelist hasn't been passed - create one
 if ( !($Filelist) ){
-$Filepathlist =  Get-ChildItem $backupdir -Filter "*.json" -Recurse | % { $_.FullName }
+$Filepathlist =  Get-ChildItem $backupdir -Filter "*.json" -Recurse | ForEach-Object { $_.FullName }
 
 Class oAZObject{
     [String]$type
@@ -57,7 +51,7 @@ foreach ($file in $Filepathlist){
 
   $jsonobject = Get-Jsonfile -Path $file
 
-     $otemp = New-Object oAZObject 
+     $otemp = New-Object oAZObject
      $otemp.type = $jsonobject.type
      $otemp.path = $file
 
@@ -84,7 +78,7 @@ if (Test-Path $outputpath) {
 Class oResult{
     [String]$Name
     [String]$displayName
-    [String]$ResourceGroup  
+    [String]$ResourceGroup
 }
 
 
@@ -99,19 +93,19 @@ foreach($file in $FileList){
  # Select the desired object type
  if ($file.Type -eq $ObjectType){
 
-    
-     $otemplate = Get-Content -Raw -Path  $file.Path | ConvertFrom-Json 
 
-     $otemp = New-Object oResult 
+     $otemplate = Get-Content -Raw -Path  $file.Path | ConvertFrom-Json
+
+     $otemp = New-Object oResult
      $otemp.Displayname = $otemplate.properties.displayName
      $otemp.Name = $otemplate.Name
 
      $otemp.ResourceGroup = ($otemplate.id).split('/')[4]
 
 
-     
 
-$serializedData = ($otemplate.properties.queryTemplate).Replace('/','`')
+
+# $serializedData = ($otemplate.properties.queryTemplate).Replace('/','`')
 
 
      $OutputArray += $otemp
@@ -122,22 +116,22 @@ $serializedData = ($otemplate.properties.queryTemplate).Replace('/','`')
      # Create YAML copies of the Config Files
        "# $($otemp.Displayname)`r`n" | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Force
        '```' | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
-      # ConvertTo-Yaml -inputObject   $serializedData | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append 
-       ConvertTo-Yaml -inputObject   $otemplate | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append 
+      # ConvertTo-Yaml -inputObject   $serializedData | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
+       ConvertTo-Yaml -inputObject   $otemplate | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
        '```' | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
 
 
      # Create YAML copies of the Query rule
    #    "# $($otemp.Displayname)`r`n" | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)QUERY.md" -Force
-       
+
        '```' | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
-       
+
        [string]$tempobj = ConvertTo-Yaml -inputObject  $otemplate
         $tempobj = $tempobj.Replace("`r","")
         $tempobj = $tempobj.Replace("`n`n","`n")
 
-         out-file -InputObject $tempobj -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append            
- 
+         out-file -InputObject $tempobj -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
+
       # ConvertTo-Yaml -inputObject   $otemplate | write-debug
        '```' | out-file -FilePath "$($outputpath)$($slash)$($otemp.ResourceGroup)-$($otemp.Name)$($slash)README.md" -Append
 
@@ -172,14 +166,14 @@ $header =@"
 
 $OutputArray | ForEach-Object {
 
-  " | $($_.displayName )  | [$($_.Name)]($($_.ResourceGroup)-$($_.name)$($slash)README.md)         | $($_.ResourceGroup )   |[Query]($($_.ResourceGroup)-$($_.name)$($slash)QUERY.md)         | " | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append 
-} 
+  " | $($_.displayName )  | [$($_.Name)]($($_.ResourceGroup)-$($_.name)$($slash)README.md)         | $($_.ResourceGroup )   |[Query]($($_.ResourceGroup)-$($_.name)$($slash)QUERY.md)         | " | out-file -FilePath "$($outputpath)$($slash)README.md"  -Append
+}
 
 
 $footer = @"
 
 ![](..$($slash)img$($slash)logo.jpg)
-"@  
+"@
 
  $null = out-file -FilePath "$($outputpath)$($slash)README.md"  -Append -InputObject $footer
 

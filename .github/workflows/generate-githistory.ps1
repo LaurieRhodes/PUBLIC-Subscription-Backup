@@ -12,8 +12,8 @@
 $rootDir   = "C:\Users\Laurie\Documents\GitHub\git-history"
 if ($($env:DIRECTORY)){$rootDir   = $($env:DIRECTORY)}
 
- 
- 
+
+
 #$ScriptDir     = Split-Path $script:MyInvocation.MyCommand.Path
 
 # Determine if script is being run on linux or windows by the direction
@@ -53,8 +53,8 @@ Remove-Item  $githistorydir$slash* -Recurse -Force
 
 
 
- 
-$files     = Get-ChildItem "$($ScriptDir)$($Slash)git-history" -Filter "*.ps1" 
+
+$files     = Get-ChildItem "$($ScriptDir)$($Slash)git-history" -Filter "*.ps1"
 
 write-debug "$($ScriptDir)$($Slash)git-history"
 
@@ -66,7 +66,7 @@ write-debug "$($ScriptDir)$($Slash)git-history"
 for ($i=0; $i -lt $files.Count; $i++) {
 
 
-write-debug "$($files[$i].FullName)"     
+write-debug "$($files[$i].FullName)"
 
 $response =  invoke-expression -Command "$($files[$i].FullName) -reportdir $($ReportDir) -backupdir $($BackupDir) -moduledir $($ModuleDir) -githistorydir $($githistorydir) "
 
