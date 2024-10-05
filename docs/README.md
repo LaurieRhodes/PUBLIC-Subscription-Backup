@@ -61,11 +61,15 @@ Subscription-Backup/
 ## Prerequisites
 
 - Azure Subscription
+
 - GitHub repository with the following secrets:
 
 - `AZURE_SUBSCRIPTION`: Your Azure Subscription ID
+
 - `SUB_BACKUP_APP_ID`: The Client ID of your Azure AD app registration
+
 - `SUB_BACKUP_APP_SECRET`: The Client Secret of your Azure AD app registration
+
 - `AZURE_TENANT_ID`: Your Azure AD Tenant ID
 
 ## Setup Instructions
@@ -93,11 +97,11 @@ REPOTOKEN ****
 
 Optionally, a Github token with repo scope may be added to allow commits to be viewed as a menu within the project.  Although interesting, this capability is part of Github natively and is redundant.
 
-
 ### 4. Customise /.github/workflows/generate-backup.yml
 
 Modify the generate backup workflow to include your Tenant name and subscription ID.
-``` text
+
+```text
     env:
       TENANT: '<ENTER YOUR TENANT NAME>'
       SUBSCRIPTION: '<ENTER YOUR SUBSCRIPTION ID>'
@@ -106,7 +110,8 @@ Modify the generate backup workflow to include your Tenant name and subscription
 ### 4. Customise /.github/workflows/generate-githistory.yml
 
 Modify the generate githistory workflow to include your Tenant name and subscription ID.
-``` text
+
+```text
     env:
       TENANT: '<ENTER YOUR TENANT NAME>'
       SUBSCRIPTION: '<ENTER YOUR SUBSCRIPTION ID>'

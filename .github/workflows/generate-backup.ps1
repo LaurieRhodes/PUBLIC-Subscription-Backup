@@ -1108,11 +1108,15 @@ if ( $azobjectjson ){
 Add-Type -AssemblyName System.Web;
 
 
-# Get an authorised Azure Header
-$authHeader = Get-Header -scope $scope  -Tenant $tenant -AppId $appid `
-                         -secret $secret
-
-
+try {
+    # Get an authorised Azure Header
+    $authHeader = Get-Header -scope $scope -Tenant $tenant -AppId $appid `
+                             -secret $secret
+}
+catch {
+    # Throw with the offending error message
+    throw "Error occurred while getting the Azure Header: $($_.Exception.Message)"
+}
 
 
 
