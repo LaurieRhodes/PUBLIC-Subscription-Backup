@@ -36,7 +36,7 @@ $Backup_SecurityCenteSubscriptions = 0
 
 
 
-$DebugPreference = 'Continue' # Enable to create debug logging
+# $DebugPreference = 'Continue' # Enable to create debug logging
 
 
 if ($($env:DIRECTORY)){$rootDir   = $($env:DIRECTORY)}
@@ -552,7 +552,7 @@ write-debug "(function Clean-AzureObject) started with type $($azobject.type)"
                     try{
                       write-debug "Calling descended 'Microsoft.OperationalInsights/workspaces'  $($azobject.Id)$($child)"
                       $response = Get-AzureObject -id "$($azobject.Id)$($child)" -authHeader  $authHeader -apiversions $AzAPIVersions
-                      write-debug "response = $(convertto-json -inputobject $response)"
+                      write-debug "response = $(convertto-json -inputobject $response  -Depth 50)"
                    }
                    catch{
                      write-warning "Get-AzureObject failed for ID $($azobject.Id)$($child)"
@@ -1321,7 +1321,7 @@ $AzAPIVersions = Get-AzureAPIVersions -header $authHeader -SubscriptionID $subsc
 
 
 
-#write-debug $(convertto-json -inputobject $subscriptionobjects)
+#write-debug $(convertto-json -inputobject $subscriptionobjects  -Depth 50)
 
 foreach ($azureobject in $subscriptionobjects ){
 
